@@ -1,0 +1,614 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>Venu — Chat & Calls</title>
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400;500;600&family=Playfair+Display:wght@600&display=swap" rel="stylesheet"/>
+<style>
+*{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent;}
+:root{
+  --bg:#fafafa;
+  --surface:#fff;
+  --border:#efefef;
+  --text:#0a0a0a;
+  --sub:#8e8e8e;
+  --accent:#0095f6;
+  --accent2:#833ab4;
+  --danger:#ed4956;
+  --green:#00c06b;
+  --radius:22px;
+  --shadow:0 2px 20px rgba(0,0,0,.08);
+}
+html,body{height:100%;background:var(--bg);font-family:'DM Sans',sans-serif;color:var(--text);}
+
+/* ── SCREENS ── */
+.screen{display:none;height:100%;flex-direction:column;}
+.screen.active{display:flex;}
+
+/* ── LOGIN ── */
+#loginScreen{align-items:center;justify-content:center;padding:32px 24px;background:var(--surface);}
+.login-logo{font-family:'Playfair Display',serif;font-size:42px;background:linear-gradient(135deg,#833ab4,#fd1d1d,#fcb045);-webkit-background-clip:text;-webkit-text-fill-color:transparent;margin-bottom:8px;text-align:center;}
+.login-tagline{color:var(--sub);font-size:13px;text-align:center;margin-bottom:44px;}
+.login-card{width:100%;max-width:360px;}
+.field{margin-bottom:14px;}
+.field label{display:block;font-size:12px;font-weight:600;color:var(--sub);text-transform:uppercase;letter-spacing:.5px;margin-bottom:6px;}
+.field input{width:100%;padding:14px 16px;border:1.5px solid var(--border);border-radius:12px;font-family:'DM Sans',sans-serif;font-size:15px;background:var(--bg);outline:none;transition:border-color .2s;}
+.field input:focus{border-color:var(--accent);}
+.btn-primary{width:100%;padding:15px;background:linear-gradient(135deg,#833ab4,#fd1d1d,#fcb045);border:none;border-radius:12px;color:#fff;font-family:'DM Sans',sans-serif;font-size:15px;font-weight:600;cursor:pointer;margin-top:6px;transition:opacity .2s;}
+.btn-primary:active{opacity:.85;}
+.err{color:var(--danger);font-size:13px;text-align:center;margin-top:10px;min-height:18px;}
+
+/* ── HOME ── */
+#homeScreen{background:var(--surface);}
+.topbar{display:flex;align-items:center;justify-content:space-between;padding:16px 20px 12px;border-bottom:1px solid var(--border);}
+.topbar-title{font-family:'Playfair Display',serif;font-size:24px;}
+.avatar-btn{width:34px;height:34px;border-radius:50%;background:linear-gradient(135deg,#833ab4,#fcb045);display:flex;align-items:center;justify-content:center;color:#fff;font-weight:700;font-size:13px;cursor:pointer;border:none;}
+
+.search-box{padding:12px 16px;}
+.search-input-wrap{display:flex;align-items:center;background:var(--bg);border-radius:12px;padding:0 14px;gap:10px;}
+.search-input-wrap svg{flex-shrink:0;color:var(--sub);}
+.search-input-wrap input{flex:1;border:none;background:transparent;font-family:'DM Sans',sans-serif;font-size:14px;padding:11px 0;outline:none;}
+.find-btn{padding:10px 18px;background:var(--accent);border:none;border-radius:10px;color:#fff;font-family:'DM Sans',sans-serif;font-size:13px;font-weight:600;cursor:pointer;white-space:nowrap;}
+
+.found-card{margin:0 16px;padding:16px;background:var(--bg);border-radius:16px;display:none;align-items:center;gap:14px;}
+.found-card.show{display:flex;}
+.fa-avatar{width:50px;height:50px;border-radius:50%;background:linear-gradient(135deg,#833ab4,#fd1d1d);display:flex;align-items:center;justify-content:center;color:#fff;font-weight:700;font-size:18px;flex-shrink:0;}
+.fa-info{flex:1;}
+.fa-name{font-weight:600;font-size:15px;}
+.fa-phone{font-size:13px;color:var(--sub);}
+.fa-status{font-size:12px;font-weight:600;margin-top:2px;}
+.fa-status.online{color:var(--green);}
+.fa-status.offline{color:var(--sub);}
+.chat-btn{padding:9px 18px;background:var(--accent);border:none;border-radius:10px;color:#fff;font-family:'DM Sans',sans-serif;font-size:13px;font-weight:600;cursor:pointer;}
+
+.section-title{padding:16px 20px 8px;font-size:12px;font-weight:600;color:var(--sub);text-transform:uppercase;letter-spacing:.5px;}
+.chat-list{flex:1;overflow-y:auto;}
+.chat-item{display:flex;align-items:center;gap:14px;padding:14px 20px;cursor:pointer;transition:background .15s;}
+.chat-item:active{background:var(--bg);}
+.ci-avatar{width:52px;height:52px;border-radius:50%;background:linear-gradient(135deg,#0095f6,#833ab4);display:flex;align-items:center;justify-content:justify-content;align-items:center;justify-content:center;color:#fff;font-weight:700;font-size:19px;flex-shrink:0;position:relative;}
+.ci-dot{position:absolute;bottom:2px;right:2px;width:12px;height:12px;border-radius:50%;background:var(--green);border:2px solid var(--surface);}
+.ci-info{flex:1;min-width:0;}
+.ci-name{font-weight:600;font-size:15px;}
+.ci-last{font-size:13px;color:var(--sub);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+.ci-time{font-size:11px;color:var(--sub);}
+.empty-state{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:10px;color:var(--sub);padding:40px;}
+.empty-state svg{opacity:.25;}
+.empty-state p{font-size:14px;text-align:center;}
+
+/* ── CHAT SCREEN ── */
+#chatScreen{background:var(--bg);}
+.chat-topbar{display:flex;align-items:center;gap:12px;padding:12px 16px;background:var(--surface);border-bottom:1px solid var(--border);}
+.back-btn{width:34px;height:34px;display:flex;align-items:center;justify-content:center;border:none;background:transparent;cursor:pointer;border-radius:50%;}
+.ct-avatar{width:38px;height:38px;border-radius:50%;background:linear-gradient(135deg,#fd1d1d,#fcb045);display:flex;align-items:center;justify-content:center;color:#fff;font-weight:700;font-size:14px;flex-shrink:0;}
+.ct-info{flex:1;}
+.ct-name{font-weight:600;font-size:15px;}
+.ct-status{font-size:12px;color:var(--sub);}
+.ct-status.online{color:var(--green);}
+.call-btns{display:flex;gap:8px;}
+.call-btn{width:36px;height:36px;border-radius:50%;border:none;display:flex;align-items:center;justify-content:center;cursor:pointer;transition:background .15s;}
+.call-btn.voice{background:#e8f5e9;color:#2e7d32;}
+.call-btn.video{background:#e3f2fd;color:#1565c0;}
+.call-btn:active{opacity:.7;}
+
+.messages{flex:1;overflow-y:auto;padding:16px;display:flex;flex-direction:column;gap:6px;}
+.msg-wrap{display:flex;flex-direction:column;}
+.msg-wrap.me{align-items:flex-end;}
+.msg-wrap.them{align-items:flex-start;}
+.bubble{max-width:75%;padding:10px 14px;border-radius:18px;font-size:14px;line-height:1.4;word-break:break-word;}
+.msg-wrap.me .bubble{background:linear-gradient(135deg,#833ab4,#fd1d1d);color:#fff;border-bottom-right-radius:4px;}
+.msg-wrap.them .bubble{background:var(--surface);color:var(--text);border-bottom-left-radius:4px;box-shadow:var(--shadow);}
+.msg-time{font-size:10px;color:var(--sub);margin-top:3px;padding:0 4px;}
+.typing-bubble{display:none;align-items:center;gap:5px;padding:10px 14px;background:var(--surface);border-radius:18px;border-bottom-left-radius:4px;width:fit-content;box-shadow:var(--shadow);}
+.typing-bubble.show{display:flex;}
+.typing-dot{width:7px;height:7px;border-radius:50%;background:var(--sub);animation:bounce .9s infinite;}
+.typing-dot:nth-child(2){animation-delay:.15s;}
+.typing-dot:nth-child(3){animation-delay:.3s;}
+@keyframes bounce{0%,60%,100%{transform:translateY(0);}30%{transform:translateY(-5px);}}
+
+.chat-input-bar{display:flex;align-items:center;gap:10px;padding:10px 14px;background:var(--surface);border-top:1px solid var(--border);}
+.msg-input{flex:1;border:1.5px solid var(--border);border-radius:22px;padding:10px 16px;font-family:'DM Sans',sans-serif;font-size:14px;outline:none;resize:none;max-height:100px;transition:border-color .2s;}
+.msg-input:focus{border-color:var(--accent);}
+.send-btn{width:40px;height:40px;border-radius:50%;background:linear-gradient(135deg,#833ab4,#fd1d1d);border:none;display:flex;align-items:center;justify-content:center;cursor:pointer;flex-shrink:0;transition:opacity .2s;}
+.send-btn:active{opacity:.75;}
+
+/* ── CALL SCREEN ── */
+#callScreen{background:#111;position:fixed;inset:0;z-index:100;display:none;flex-direction:column;align-items:center;justify-content:space-between;padding:60px 24px 48px;}
+#callScreen.active{display:flex;}
+.call-bg{position:absolute;inset:0;background:linear-gradient(160deg,#1a0533,#0d1b2a);z-index:0;}
+.call-content{position:relative;z-index:1;display:flex;flex-direction:column;align-items:center;gap:16px;width:100%;}
+.call-remote-video{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;z-index:0;display:none;border-radius:0;}
+.call-local-video{position:absolute;top:60px;right:20px;width:110px;height:150px;object-fit:cover;border-radius:16px;border:2px solid rgba(255,255,255,.3);z-index:2;display:none;}
+.call-avatar-big{width:100px;height:100px;border-radius:50%;background:linear-gradient(135deg,#833ab4,#fd1d1d);display:flex;align-items:center;justify-content:center;color:#fff;font-weight:700;font-size:36px;}
+.call-name{color:#fff;font-size:22px;font-weight:600;}
+.call-status{color:rgba(255,255,255,.6);font-size:14px;}
+.call-timer{color:rgba(255,255,255,.8);font-size:16px;font-weight:500;font-variant-numeric:tabular-nums;}
+.call-controls{position:relative;z-index:1;display:flex;gap:24px;align-items:center;}
+.ctrl-btn{width:60px;height:60px;border-radius:50%;border:none;display:flex;align-items:center;justify-content:center;cursor:pointer;transition:transform .15s,opacity .2s;}
+.ctrl-btn:active{transform:scale(.92);}
+.ctrl-btn.mute{background:rgba(255,255,255,.15);color:#fff;}
+.ctrl-btn.mute.active{background:#fff;color:#111;}
+.ctrl-btn.cam{background:rgba(255,255,255,.15);color:#fff;}
+.ctrl-btn.cam.active{background:#fff;color:#111;}
+.ctrl-btn.end{background:var(--danger);color:#fff;width:68px;height:68px;}
+.ctrl-btn.speaker{background:rgba(255,255,255,.15);color:#fff;}
+
+/* incoming call */
+#incomingCall{position:fixed;inset:0;z-index:200;display:none;flex-direction:column;align-items:center;justify-content:center;background:rgba(0,0,0,.85);backdrop-filter:blur(10px);}
+#incomingCall.show{display:flex;}
+.ic-card{background:var(--surface);border-radius:28px;padding:32px 24px;display:flex;flex-direction:column;align-items:center;gap:16px;width:300px;}
+.ic-type{font-size:12px;font-weight:600;color:var(--sub);text-transform:uppercase;letter-spacing:.5px;}
+.ic-avatar{width:72px;height:72px;border-radius:50%;background:linear-gradient(135deg,#0095f6,#833ab4);display:flex;align-items:center;justify-content:center;color:#fff;font-size:26px;font-weight:700;}
+.ic-name{font-size:20px;font-weight:700;}
+.ic-btns{display:flex;gap:32px;margin-top:8px;}
+.ic-btn{width:60px;height:60px;border-radius:50%;border:none;display:flex;align-items:center;justify-content:justify-content;align-items:center;justify-content:center;cursor:pointer;}
+.ic-btn.decline{background:var(--danger);color:#fff;}
+.ic-btn.accept{background:var(--green);color:#fff;}
+
+/* toast */
+.toast{position:fixed;bottom:80px;left:50%;transform:translateX(-50%) translateY(20px);background:#222;color:#fff;padding:10px 20px;border-radius:22px;font-size:13px;opacity:0;transition:all .3s;pointer-events:none;z-index:999;white-space:nowrap;}
+.toast.show{opacity:1;transform:translateX(-50%) translateY(0);}
+</style>
+</head>
+<body>
+
+<!-- LOGIN -->
+<div class="screen active" id="loginScreen">
+  <div class="login-logo">Venu</div>
+  <p class="login-tagline">Chat · Voice · Video</p>
+  <div class="login-card">
+    <div class="field">
+      <label>Your Name</label>
+      <input type="text" id="nameInput" placeholder="Enter your name" autocomplete="off"/>
+    </div>
+    <div class="field">
+      <label>Phone Number</label>
+      <input type="tel" id="phoneInput" placeholder="10-digit number" maxlength="10" autocomplete="off"/>
+    </div>
+    <button class="btn-primary" onclick="login()">Continue</button>
+    <p class="err" id="loginErr"></p>
+  </div>
+</div>
+
+<!-- HOME -->
+<div class="screen" id="homeScreen">
+  <div class="topbar">
+    <span class="topbar-title">Venu</span>
+    <button class="avatar-btn" id="myAvatarBtn"></button>
+  </div>
+  <div class="search-box">
+    <div class="search-input-wrap">
+      <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><circle cx="11" cy="11" r="8"/><path d="M21 21l-4.35-4.35"/></svg>
+      <input type="tel" id="findPhone" placeholder="Find by phone number..." maxlength="10"/>
+      <button class="find-btn" onclick="findUser()">Find</button>
+    </div>
+  </div>
+  <div class="found-card" id="foundCard">
+    <div class="fa-avatar" id="foundAvatar"></div>
+    <div class="fa-info">
+      <div class="fa-name" id="foundName"></div>
+      <div class="fa-phone" id="foundPhone2"></div>
+      <div class="fa-status" id="foundStatus"></div>
+    </div>
+    <button class="chat-btn" onclick="openChat(foundUser)">Chat</button>
+  </div>
+  <div class="section-title">Messages</div>
+  <div class="chat-list" id="chatList">
+    <div class="empty-state">
+      <svg width="48" height="48" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
+      <p>Search a phone number above<br>to start chatting!</p>
+    </div>
+  </div>
+</div>
+
+<!-- CHAT -->
+<div class="screen" id="chatScreen">
+  <div class="chat-topbar">
+    <button class="back-btn" onclick="goHome()">
+      <svg width="20" height="20" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path d="M15 18l-6-6 6-6"/></svg>
+    </button>
+    <div class="ct-avatar" id="chatAvatar"></div>
+    <div class="ct-info">
+      <div class="ct-name" id="chatName"></div>
+      <div class="ct-status" id="chatStatus">offline</div>
+    </div>
+    <div class="call-btns">
+      <button class="call-btn voice" onclick="startCall('voice')">
+        <svg width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07A19.5 19.5 0 0 1 4.69 13a19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 3.6 2h3a2 2 0 0 1 2 1.72c.127.96.361 1.903.7 2.81a2 2 0 0 1-.45 2.11L7.91 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45c.907.339 1.85.573 2.81.7A2 2 0 0 1 22 16.92z"/></svg>
+      </button>
+      <button class="call-btn video" onclick="startCall('video')">
+        <svg width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><polygon points="23 7 16 12 23 17 23 7"/><rect x="1" y="5" width="15" height="14" rx="2" ry="2"/></svg>
+      </button>
+    </div>
+  </div>
+  <div class="messages" id="messages">
+    <div class="typing-bubble" id="typingBubble">
+      <div class="typing-dot"></div><div class="typing-dot"></div><div class="typing-dot"></div>
+    </div>
+  </div>
+  <div class="chat-input-bar">
+    <textarea class="msg-input" id="msgInput" placeholder="Message..." rows="1" oninput="onType()" onkeydown="onKey(event)"></textarea>
+    <button class="send-btn" onclick="sendMsg()">
+      <svg width="18" height="18" fill="none" stroke="#fff" stroke-width="2.5" viewBox="0 0 24 24"><line x1="22" y1="2" x2="11" y2="13"/><polygon points="22 2 15 22 11 13 2 9 22 2"/></svg>
+    </button>
+  </div>
+</div>
+
+<!-- CALL SCREEN -->
+<div id="callScreen">
+  <div class="call-bg"></div>
+  <video id="remoteVideo" autoplay playsinline></video>
+  <video id="localVideo" autoplay playsinline muted></video>
+  <div class="call-content">
+    <div class="call-avatar-big" id="callAvatar"></div>
+    <div class="call-name" id="callName"></div>
+    <div class="call-status" id="callStatusTxt">Calling...</div>
+    <div class="call-timer" id="callTimer" style="display:none"></div>
+  </div>
+  <div class="call-controls">
+    <button class="ctrl-btn mute" id="muteBtn" onclick="toggleMute()">
+      <svg width="22" height="22" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z"/><path d="M19 10v2a7 7 0 0 1-14 0v-2"/><line x1="12" y1="19" x2="12" y2="23"/><line x1="8" y1="23" x2="16" y2="23"/></svg>
+    </button>
+    <button class="ctrl-btn end" onclick="endCall()">
+      <svg width="26" height="26" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M10.68 13.31a16 16 0 0 0 3.41 2.6l1.27-1.27a2 2 0 0 1 2.11-.45c.907.339 1.85.573 2.81.7A2 2 0 0 1 22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.42 19.42 0 0 1-3.45-2.93m-2.4-3.87A19.79 19.79 0 0 1 2.14 4.93 2 2 0 0 1 4.11 2.76h3A2 2 0 0 1 9.09 4.5c.127.96.361 1.903.7 2.81a2 2 0 0 1-.45 2.11L8 10.69"/><line x1="23" y1="1" x2="1" y2="23"/></svg>
+    </button>
+    <button class="ctrl-btn cam" id="camBtn" onclick="toggleCam()" style="display:none">
+      <svg width="22" height="22" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><polygon points="23 7 16 12 23 17 23 7"/><rect x="1" y="5" width="15" height="14" rx="2" ry="2"/></svg>
+    </button>
+    <button class="ctrl-btn speaker" id="speakerBtn" onclick="toggleSpeaker()" style="display:none">
+      <svg width="22" height="22" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"/><path d="M19.07 4.93a10 10 0 0 1 0 14.14M15.54 8.46a5 5 0 0 1 0 7.07"/></svg>
+    </button>
+  </div>
+</div>
+
+<!-- INCOMING CALL -->
+<div id="incomingCall">
+  <div class="ic-card">
+    <div class="ic-type" id="icType">Voice Call</div>
+    <div class="ic-avatar" id="icAvatar"></div>
+    <div class="ic-name" id="icName"></div>
+    <div class="ic-btns">
+      <button class="ic-btn decline" onclick="declineCall()">
+        <svg width="24" height="24" fill="none" stroke="#fff" stroke-width="2" viewBox="0 0 24 24"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+      </button>
+      <button class="ic-btn accept" onclick="acceptCall()">
+        <svg width="24" height="24" fill="none" stroke="#fff" stroke-width="2" viewBox="0 0 24 24"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07A19.5 19.5 0 0 1 4.69 13a19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 3.6 2h3a2 2 0 0 1 2 1.72c.127.96.361 1.903.7 2.81a2 2 0 0 1-.45 2.11L7.91 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45c.907.339 1.85.573 2.81.7A2 2 0 0 1 22 16.92z"/></svg>
+      </button>
+    </div>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+const SERVER = "https://venu-server.onrender.com";
+const WS_URL = "wss://venu-server.onrender.com/ws";
+
+let myToken=null, myUserId=null, myName=null, myPhone=null;
+let ws=null, currentPeer=null, foundUser=null;
+let conversations={}, typingTimers={};
+let pc=null, localStream=null, callType=null, isInCall=false, isCaller=false;
+let callTimerInterval=null, callSeconds=0;
+let pendingOffer=null, pendingFrom=null, pendingCallType=null;
+let muteOn=false, camOff=false;
+
+// ── LOGIN ──
+async function login(){
+  const name=document.getElementById('nameInput').value.trim();
+  const phone=document.getElementById('phoneInput').value.replace(/\D/g,'');
+  const errEl=document.getElementById('loginErr');
+  errEl.textContent='';
+  if(!name){errEl.textContent='Please enter your name';return;}
+  if(phone.length<10){errEl.textContent='Enter a valid 10-digit number';return;}
+  try{
+    const r=await fetch(SERVER+'/auth/login',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({name,phone})});
+    const d=await r.json();
+    if(!r.ok){errEl.textContent=d.error||'Login failed';return;}
+    myToken=d.token; myUserId=d.userId; myName=d.name; myPhone=d.phone;
+    document.getElementById('myAvatarBtn').textContent=myName[0].toUpperCase();
+    showScreen('homeScreen');
+    connectWS();
+  }catch(e){errEl.textContent='Server error. Try again.';}
+}
+
+// ── WS ──
+function connectWS(){
+  ws=new WebSocket(WS_URL);
+  ws.onopen=()=>{ws.send(JSON.stringify({type:'auth',token:myToken}));};
+  ws.onmessage=e=>{
+    const msg=JSON.parse(e.data);
+    switch(msg.type){
+      case 'auth_ok': showToast('Connected ✓'); break;
+      case 'message': onMessage(msg); break;
+      case 'message_sent': break;
+      case 'typing': onTyping(msg); break;
+      case 'presence': onPresence(msg); break;
+      case 'offer': onOffer(msg); break;
+      case 'answer': onAnswer(msg); break;
+      case 'ice_candidate': onIce(msg); break;
+    }
+  };
+  ws.onclose=()=>{setTimeout(connectWS,3000);};
+  setInterval(()=>ws?.readyState===1&&ws.send(JSON.stringify({type:'ping'})),25000);
+}
+
+function wsSend(data){if(ws?.readyState===1)ws.send(JSON.stringify(data));}
+
+// ── FIND USER ──
+async function findUser(){
+  const phone=document.getElementById('findPhone').value.replace(/\D/g,'');
+  if(phone.length<10){showToast('Enter 10-digit number');return;}
+  try{
+    const r=await fetch(SERVER+'/users/find',{method:'POST',headers:{'Content-Type':'application/json','Authorization':'Bearer '+myToken},body:JSON.stringify({phone})});
+    const d=await r.json();
+    if(!r.ok){showToast(d.error||'Not found');document.getElementById('foundCard').classList.remove('show');return;}
+    foundUser=d;
+    document.getElementById('foundAvatar').textContent=d.name[0].toUpperCase();
+    document.getElementById('foundName').textContent=d.name;
+    document.getElementById('foundPhone2').textContent=d.phone;
+    const st=document.getElementById('foundStatus');
+    st.textContent=d.online?'● Online':'○ Offline';
+    st.className='fa-status '+(d.online?'online':'offline');
+    document.getElementById('foundCard').classList.add('show');
+  }catch(e){showToast('Error finding user');}
+}
+
+// ── CHAT ──
+function openChat(user){
+  currentPeer=user;
+  document.getElementById('chatAvatar').textContent=user.name[0].toUpperCase();
+  document.getElementById('chatName').textContent=user.name;
+  updateChatStatus();
+  renderMessages();
+  showScreen('chatScreen');
+  document.getElementById('foundCard').classList.remove('show');
+  addToList(user);
+}
+
+function updateChatStatus(){
+  if(!currentPeer)return;
+  const el=document.getElementById('chatStatus');
+  const isOnline=conversations[currentPeer.userId]?.online??currentPeer.online;
+  el.textContent=isOnline?'Active now':'Offline';
+  el.className='ct-status '+(isOnline?'online':'');
+}
+
+function onMessage(msg){
+  const uid=msg.from;
+  if(!conversations[uid]) conversations[uid]={name:msg.fromName,phone:msg.fromPhone,userId:uid,messages:[],online:true};
+  conversations[uid].messages.push({from:'them',text:msg.text,time:Date.now()});
+  if(currentPeer?.userId===uid){renderMessages();}
+  else{addToList({userId:uid,name:msg.fromName,phone:msg.fromPhone});}
+  updateChatList();
+}
+
+function onTyping(msg){
+  if(currentPeer?.userId===msg.from){
+    const tb=document.getElementById('typingBubble');
+    tb.classList.add('show');
+    clearTimeout(typingTimers[msg.from]);
+    typingTimers[msg.from]=setTimeout(()=>tb.classList.remove('show'),2500);
+  }
+}
+
+function onPresence(msg){
+  if(conversations[msg.userId]) conversations[msg.userId].online=msg.online;
+  if(currentPeer?.userId===msg.userId){
+    currentPeer.online=msg.online;
+    updateChatStatus();
+  }
+  updateChatList();
+}
+
+let typeSendTimer=null;
+function onType(){
+  const ta=document.getElementById('msgInput');
+  ta.style.height='auto';ta.style.height=Math.min(ta.scrollHeight,100)+'px';
+  if(currentPeer){
+    clearTimeout(typeSendTimer);
+    typeSendTimer=setTimeout(()=>wsSend({type:'typing',to:currentPeer.userId}),400);
+  }
+}
+
+function onKey(e){if(e.key==='Enter'&&!e.shiftKey){e.preventDefault();sendMsg();}}
+
+function sendMsg(){
+  const inp=document.getElementById('msgInput');
+  const text=inp.value.trim();
+  if(!text||!currentPeer)return;
+  const tempId=Date.now().toString();
+  wsSend({type:'message',to:currentPeer.userId,text,tempId});
+  if(!conversations[currentPeer.userId]) conversations[currentPeer.userId]={...currentPeer,messages:[],online:currentPeer.online};
+  conversations[currentPeer.userId].messages.push({from:'me',text,time:Date.now()});
+  inp.value='';inp.style.height='auto';
+  renderMessages();
+}
+
+function renderMessages(){
+  const c=conversations[currentPeer?.userId];
+  const el=document.getElementById('messages');
+  const tb=document.getElementById('typingBubble');
+  el.innerHTML='';el.appendChild(tb);
+  (c?.messages||[]).forEach(m=>{
+    const w=document.createElement('div');
+    w.className='msg-wrap '+(m.from==='me'?'me':'them');
+    const b=document.createElement('div');b.className='bubble';b.textContent=m.text;
+    const t=document.createElement('div');t.className='msg-time';
+    const d=new Date(m.time);t.textContent=d.getHours()+':'+String(d.getMinutes()).padStart(2,'0');
+    w.appendChild(b);w.appendChild(t);el.appendChild(w);
+  });
+  el.scrollTop=el.scrollHeight;
+}
+
+function addToList(user){
+  if(!conversations[user.userId]) conversations[user.userId]={...user,messages:[],online:user.online||false};
+  updateChatList();
+}
+
+function updateChatList(){
+  const el=document.getElementById('chatList');
+  const keys=Object.keys(conversations);
+  if(!keys.length){el.innerHTML='<div class="empty-state"><svg width="48" height="48" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg><p>Search a phone number above<br>to start chatting!</p></div>';return;}
+  el.innerHTML=keys.map(uid=>{
+    const c=conversations[uid];
+    const last=c.messages[c.messages.length-1];
+    const lastTxt=last?(last.from==='me'?'You: ':'')+last.text:'Tap to chat';
+    const d=last?new Date(last.time):null;
+    const timeStr=d?d.getHours()+':'+String(d.getMinutes()).padStart(2,'0'):'';
+    return `<div class="chat-item" onclick="openChat(conversations['${uid}'])">
+      <div class="ci-avatar">${c.name[0].toUpperCase()}${c.online?'<div class="ci-dot"></div>':''}</div>
+      <div class="ci-info"><div class="ci-name">${c.name}</div><div class="ci-last">${lastTxt}</div></div>
+      <div class="ci-time">${timeStr}</div>
+    </div>`;
+  }).join('');
+}
+
+function goHome(){currentPeer=null;showScreen('homeScreen');updateChatList();}
+
+// ── WEBRTC CALLS ──
+const iceConfig={iceServers:[{urls:'stun:stun.l.google.com:19302'},{urls:'stun:stun1.l.google.com:19302'}]};
+
+async function startCall(type){
+  if(!currentPeer){showToast('Open a chat first');return;}
+  if(isInCall){showToast('Already in a call');return;}
+  callType=type; isCaller=true;
+  await openCallScreen(currentPeer,type,'Calling...');
+  try{
+    localStream=await navigator.mediaDevices.getUserMedia(type==='video'?{video:true,audio:true}:{audio:true});
+  }catch(e){showToast('Microphone/Camera access denied');endCall();return;}
+  if(type==='video'){
+    const lv=document.getElementById('localVideo');lv.srcObject=localStream;lv.style.display='block';
+    document.getElementById('camBtn').style.display='flex';
+  }
+  pc=new RTCPeerConnection(iceConfig);
+  localStream.getTracks().forEach(t=>pc.addTrack(t,localStream));
+  pc.onicecandidate=e=>{if(e.candidate)wsSend({type:'ice_candidate',to:currentPeer.userId,candidate:e.candidate,callType});};
+  pc.ontrack=e=>{
+    const rv=document.getElementById('remoteVideo');
+    rv.srcObject=e.streams[0];
+    if(type==='video'){rv.style.display='block';}
+    startTimer();
+    document.getElementById('callStatusTxt').textContent='Connected';
+  };
+  const offer=await pc.createOffer();
+  await pc.setLocalDescription(offer);
+  wsSend({type:'offer',to:currentPeer.userId,sdp:offer,callType});
+}
+
+async function onOffer(msg){
+  if(isInCall){wsSend({type:'answer',to:msg.from,sdp:{type:'answer',sdp:''},callType:msg.callType});return;}
+  pendingOffer=msg.sdp; pendingFrom=msg.from; pendingCallType=msg.callType;
+  const caller=conversations[msg.from]||{name:msg.fromName||'Unknown',userId:msg.from};
+  document.getElementById('icAvatar').textContent=caller.name[0].toUpperCase();
+  document.getElementById('icName').textContent=caller.name;
+  document.getElementById('icType').textContent=msg.callType==='video'?'📹 Video Call':'📞 Voice Call';
+  document.getElementById('incomingCall').classList.add('show');
+}
+
+async function acceptCall(){
+  document.getElementById('incomingCall').classList.remove('show');
+  callType=pendingCallType; isCaller=false;
+  const caller=conversations[pendingFrom]||{name:'Unknown',userId:pendingFrom};
+  await openCallScreen(caller,callType,'Connected');
+  try{
+    localStream=await navigator.mediaDevices.getUserMedia(callType==='video'?{video:true,audio:true}:{audio:true});
+  }catch(e){showToast('Access denied');endCall();return;}
+  if(callType==='video'){
+    const lv=document.getElementById('localVideo');lv.srcObject=localStream;lv.style.display='block';
+    document.getElementById('camBtn').style.display='flex';
+  }
+  pc=new RTCPeerConnection(iceConfig);
+  localStream.getTracks().forEach(t=>pc.addTrack(t,localStream));
+  pc.onicecandidate=e=>{if(e.candidate)wsSend({type:'ice_candidate',to:pendingFrom,candidate:e.candidate,callType});};
+  pc.ontrack=e=>{
+    const rv=document.getElementById('remoteVideo');rv.srcObject=e.streams[0];
+    if(callType==='video')rv.style.display='block';
+    startTimer();
+  };
+  await pc.setRemoteDescription(new RTCSessionDescription(pendingOffer));
+  const answer=await pc.createAnswer();
+  await pc.setLocalDescription(answer);
+  wsSend({type:'answer',to:pendingFrom,sdp:answer,callType});
+}
+
+function declineCall(){document.getElementById('incomingCall').classList.remove('show');pendingOffer=null;}
+
+async function onAnswer(msg){
+  if(!pc||!msg.sdp?.sdp)return;
+  await pc.setRemoteDescription(new RTCSessionDescription(msg.sdp));
+  startTimer();
+  document.getElementById('callStatusTxt').textContent='Connected';
+}
+
+async function onIce(msg){
+  if(pc&&msg.candidate){try{await pc.addIceCandidate(new RTCIceCandidate(msg.candidate));}catch(e){}}
+}
+
+async function openCallScreen(user,type,status){
+  isInCall=true;
+  document.getElementById('callAvatar').textContent=user.name[0].toUpperCase();
+  document.getElementById('callName').textContent=user.name;
+  document.getElementById('callStatusTxt').textContent=status;
+  document.getElementById('callTimer').style.display='none';
+  document.getElementById('remoteVideo').style.display='none';
+  document.getElementById('localVideo').style.display='none';
+  document.getElementById('camBtn').style.display='none';
+  document.getElementById('speakerBtn').style.display= type==='voice'?'flex':'none';
+  document.getElementById('callScreen').classList.add('active');
+}
+
+function endCall(){
+  isInCall=false;
+  if(pc){pc.close();pc=null;}
+  if(localStream){localStream.getTracks().forEach(t=>t.stop());localStream=null;}
+  clearInterval(callTimerInterval);callTimerInterval=null;callSeconds=0;
+  document.getElementById('callScreen').classList.remove('active');
+  document.getElementById('remoteVideo').srcObject=null;
+  document.getElementById('localVideo').srcObject=null;
+  muteOn=false;camOff=false;
+}
+
+function startTimer(){
+  callSeconds=0;
+  document.getElementById('callTimer').style.display='block';
+  clearInterval(callTimerInterval);
+  callTimerInterval=setInterval(()=>{
+    callSeconds++;
+    const m=Math.floor(callSeconds/60),s=callSeconds%60;
+    document.getElementById('callTimer').textContent=String(m).padStart(2,'0')+':'+String(s).padStart(2,'0');
+  },1000);
+}
+
+function toggleMute(){
+  muteOn=!muteOn;
+  localStream?.getAudioTracks().forEach(t=>t.enabled=!muteOn);
+  document.getElementById('muteBtn').classList.toggle('active',muteOn);
+  showToast(muteOn?'Muted':'Unmuted');
+}
+
+function toggleCam(){
+  camOff=!camOff;
+  localStream?.getVideoTracks().forEach(t=>t.enabled=!camOff);
+  document.getElementById('camBtn').classList.toggle('active',camOff);
+  showToast(camOff?'Camera off':'Camera on');
+}
+
+function toggleSpeaker(){showToast('Speaker toggle (device dependent)');}
+
+// ── UTILS ──
+function showScreen(id){
+  document.querySelectorAll('.screen').forEach(s=>s.classList.remove('active'));
+  document.getElementById(id).classList.add('active');
+}
+
+let toastTimer=null;
+function showToast(msg){
+  const t=document.getElementById('toast');t.textContent=msg;t.classList.add('show');
+  clearTimeout(toastTimer);toastTimer=setTimeout(()=>t.classList.remove('show'),2500);
+}
+
+document.getElementById('phoneInput').addEventListener('keydown',e=>{if(e.key==='Enter')login();});
+document.getElementById('findPhone').addEventListener('keydown',e=>{if(e.key==='Enter')findUser();});
+</script>
+</body>
+</html>
